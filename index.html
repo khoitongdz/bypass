@@ -6,8 +6,11 @@
   <title>Pastefy Clone</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
+    pre code { display: block; white-space: pre; overflow-x: auto; padding: 1rem; border-radius: 0.5rem; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex flex-col items-center p-6">
@@ -44,15 +47,21 @@
     <div class="bg-gray-900 w-11/12 md:w-2/3 lg:w-1/2 p-6 rounded-2xl shadow-2xl relative">
       <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white">✕</button>
       <h3 id="modalTitle" class="text-xl font-bold mb-3"></h3>
-      <pre id="modalContent" class="bg-gray-800 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono text-sm"></pre>
+      <pre><code id="modalContent" class="language-javascript"></code></pre>
       <div class="mt-4 flex space-x-3">
         <button onclick="copyModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Copy</button>
         <button onclick="downloadModal()" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg">Download</button>
         <button onclick="shareModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg">Share Link</button>
-        <button onclick="shareRawModal()" class="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg">Raw Link</button>
+        <button onclick="rawModal()" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg">Raw</button>
       </div>
       <p id="shareLink" class="mt-3 text-sm text-blue-400 break-words"></p>
     </div>
+  </div>
+
+  <!-- Raw hiển thị riêng -->
+  <div id="rawView" class="hidden w-full max-w-5xl">
+    <h2 class="text-xl font-bold mb-3">Raw Paste</h2>
+    <pre><code id="rawContent" class="language-javascript"></code></pre>
   </div>
 
   <script>
@@ -103,14 +112,11 @@
       if (!paste) return;
       currentPaste = paste;
 
-      // Nếu đang ở chế độ raw thì hiển thị raw luôn
-      if (window.location.hash.endsWith("/raw")) {
-        showRawPage(paste);
-        return;
-      }
-
       document.getElementById("modalTitle").textContent = paste.title;
-      document.getElementById("modalContent").textContent = paste.content;
+      const modalContent = document.getElementById("modalContent");
+      modalContent.textContent = paste.content;
+      hljs.highlightElement(modalContent);
+
       document.getElementById("modal").classList.remove("hidden");
       document.getElementById("shareLink").textContent = "";
     }
@@ -145,12 +151,24 @@
       alert("Link đã copy vào clipboard!");
     }
 
-    function shareRawModal() {
+    function rawModal() {
       if (!currentPaste) return;
-      const link = window.location.origin + window.location.pathname + "#" + currentPaste.id + "/raw";
-      document.getElementById("shareLink").textContent = link;
-      navigator.clipboard.writeText(link);
-      alert("Raw link đã copy vào clipboard!");
+      window.location.hash = "raw-" + currentPaste.id;
+      openRawById(currentPaste.id);
+    }
+
+    function openRawById(id) {
+      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
+      let paste = pastes.find(p => p.id == id);
+      if (!paste) return;
+
+      document.getElementById("editor").classList.add("hidden");
+      document.getElementById("modal").classList.add("hidden");
+      document.getElementById("rawView").classList.remove("hidden");
+
+      const rawContent = document.getElementById("rawContent");
+      rawContent.textContent = paste.content;
+      hljs.highlightElement(rawContent);
     }
 
     function newPaste() {
@@ -168,23 +186,17 @@
 
     function goHome() {
       closeModal();
+      document.getElementById("editor").classList.remove("hidden");
+      document.getElementById("rawView").classList.add("hidden");
       window.location.hash = "";
-      document.body.innerHTML = document.body.innerHTML; // reload nhẹ
-    }
-
-    function showRawPage(paste) {
-      document.body.innerHTML = `<pre class='p-6 whitespace-pre-wrap font-mono text-sm text-white bg-black min-h-screen'>${paste.content.replace(/</g,"&lt;")}</pre>`;
     }
 
     window.addEventListener("load", () => {
       loadPastes();
       const hash = window.location.hash.slice(1);
-      if (!hash) return;
-
-      if (hash.endsWith("/raw")) {
-        const id = hash.replace("/raw", "");
-        openPasteById(id);
-      } else {
+      if (hash.startsWith("raw-")) {
+        openRawById(hash.replace("raw-", ""));
+      } else if (hash) {
         openPasteById(hash);
       }
     });
