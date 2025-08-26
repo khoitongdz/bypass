@@ -1,453 +1,167 @@
 <!DOCTYPE html>
-<html lang="vi" data-bs-theme="light">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mã Hóa Code</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            padding: 20px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            transition: background-color 0.3s ease;
-        }
-        h1 {
-            text-align: center;
-            color: #0d6efd;
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-        .form-label {
-            font-weight: 500;
-            color: inherit;
-        }
-        #output {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 8px;
-            position: relative;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-        #output pre {
-            background: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-            font-family: 'Inter', monospace;
-        }
-        #output code {
-            color: inherit;
-        }
-        /* Simple syntax highlighting */
-        #output code .keyword { color: #ff79c6; }
-        #output code .string { color: #f1fa8c; }
-        #output code .comment { color: #6272a4; font-style: italic; }
-        #output .copy-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 0.9rem;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
-        #output .copy-btn:hover {
-            transform: scale(1.05);
-        }
-        .method-info {
-            font-style: italic;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-        .btn-primary, .btn-secondary, .btn-copy {
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
-        .btn-primary:hover, .btn-secondary:hover, .btn-copy:hover {
-            transform: scale(1.05);
-        }
-        .btn-copy {
-            background-color: #28a745;
-            border: none;
-        }
-        .btn-copy:hover {
-            background-color: #218838;
-        }
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            transition: transform 0.2s ease;
-        }
-        .theme-toggle:hover {
-            transform: scale(1.05);
-        }
-        .alert {
-            margin-top: 20px;
-            border-radius: 8px;
-        }
-        .spinner {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        [data-bs-theme="light"] {
-            background-color: #f8f9fa;
-            color: #212529;
-        }
-        [data-bs-theme="light"] .container {
-            background-color: #ffffff;
-        }
-        [data-bs-theme="light"] #output {
-            background-color: #f1f3f5;
-            border: 1px solid #dee2e6;
-        }
-        [data-bs-theme="light"] .method-info {
-            color: #6c757d;
-        }
-        [data-bs-theme="dark"] {
-            background-color: #212529;
-            color: #f8f9fa;
-        }
-        [data-bs-theme="dark"] .container {
-            background-color: #343a40;
-        }
-        [data-bs-theme="dark"] #output {
-            background-color: #495057;
-            border: 1px solid #6c757d;
-        }
-        [data-bs-theme="dark"] .method-info {
-            color: #adb5bd;
-        }
-        [data-bs-theme="dark"] h1 {
-            color: #66b0ff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pastefy Clone</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
-<body>
-    <button class="btn btn-outline-secondary theme-toggle" onclick="toggleTheme()">
-        <span class="light-icon">🌞 Chuyển sang chế độ tối</span>
-        <span class="dark-icon" style="display: none;">🌙 Chuyển sang chế độ sáng</span>
-    </button>
-    <div class="container position-relative">
-        <h1>Mã Hóa Đa Code</h1>
-        <form>
-            <div class="mb-3">
-                <label for="inputText" class="form-label">Nhập văn bản:</label>
-                <textarea class="form-control" id="inputText" rows="4" placeholder="Nhập văn bản để mã hóa/giải mã"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="language" class="form-label">Chọn ngôn ngữ:</label>
-                <select class="form-select" id="language">
-                    <option value="python">Python</option>
-                    <option value="java">Java</option>
-                </select>
-            </div>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <button type="button" class="btn btn-primary" onclick="processText('encode')">Mã Hóa</button>
-                <button type="button" class="btn btn-secondary" onclick="processText('decode')">Giải Mã</button>
-            </div>
-        </form>
-        <div class="spinner-border text-primary spinner" role="status">
-            <span class="visually-hidden">Đang xử lý...</span>
-        </div>
-        <div id="output"></div>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+
+  <!-- Header -->
+  <header class="w-full max-w-5xl flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-blue-400 cursor-pointer" onclick="goHome()">PasteClone</h1>
+    <nav class="space-x-4">
+      <button onclick="newPaste()" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700">New</button>
+      <button onclick="clearAll()" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700">Clear All</button>
+    </nav>
+  </header>
+
+  <!-- Form nhập -->
+  <main id="editor" class="w-full max-w-5xl grid md:grid-cols-2 gap-6">
+    <div class="bg-gray-800 p-5 rounded-2xl shadow-xl flex flex-col">
+      <input id="title" type="text" placeholder="Tiêu đề paste..." 
+        class="w-full mb-3 p-3 rounded-lg bg-gray-700 text-white outline-none">
+      <textarea id="content" rows="14" placeholder="Nhập text/code tại đây..."
+        class="flex-1 w-full p-3 rounded-lg bg-gray-700 text-white outline-none font-mono text-sm"></textarea>
+      <button onclick="savePaste()" 
+        class="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 rounded-xl font-semibold">Lưu Paste</button>
     </div>
 
-    <script>
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-bs-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+    <!-- Danh sách paste -->
+    <div>
+      <h2 class="text-2xl font-semibold mb-4">Danh sách Paste</h2>
+      <div id="pasteList" class="space-y-4"></div>
+    </div>
+  </main>
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
+  <!-- Modal hiển thị paste -->
+  <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+    <div class="bg-gray-900 w-11/12 md:w-2/3 lg:w-1/2 p-6 rounded-2xl shadow-2xl relative">
+      <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white">✕</button>
+      <h3 id="modalTitle" class="text-xl font-bold mb-3"></h3>
+      <pre id="modalContent" class="bg-gray-800 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono text-sm"></pre>
+      <div class="mt-4 flex space-x-3">
+        <button onclick="copyModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Copy</button>
+        <button onclick="downloadModal()" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg">Download</button>
+        <button onclick="shareModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg">Share Link</button>
+      </div>
+      <p id="shareLink" class="mt-3 text-sm text-blue-400 break-words"></p>
+    </div>
+  </div>
 
-        function updateThemeIcon(theme) {
-            const lightIcon = document.querySelector('.light-icon');
-            const darkIcon = document.querySelector('.dark-icon');
-            if (theme === 'dark') {
-                lightIcon.style.display = 'none';
-                darkIcon.style.display = 'inline';
-            } else {
-                lightIcon.style.display = 'inline';
-                darkIcon.style.display = 'none';
-            }
-        }
+  <script>
+    let currentPaste = null;
 
-        function isAesToken(str) {
-            const base64Regex = /^[A-Za-z0-9+/=]{4,}$/;
-            return base64Regex.test(str);
-        }
+    function savePaste() {
+      const title = document.getElementById("title").value || "Untitled";
+      const content = document.getElementById("content").value.trim();
+      if (!content) return alert("Nội dung trống!");
 
-        function determineMethod(input, mode) {
-            if (mode === 'decode' && isAesToken(input)) {
-                return 'aes';
-            }
-            if (input.match(/[^A-Za-z]/)) {
-                return 'vigenere';
-            }
-            return 'caesar';
-        }
+      const paste = { id: Date.now(), title, content };
+      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
+      pastes.unshift(paste);
+      localStorage.setItem("pastes", JSON.stringify(pastes));
 
-        function highlightCode(code, language) {
-            // Simple regex-based highlighting for Python and Java
-            const keywords = language === 'python' ?
-                /\b(def|if|else|for|import|from|return|print|class|public|static|void|boolean|int|byte)\b/g :
-                /\b(public|static|void|class|boolean|int|byte|import|if|else|for|return|throws|try|catch)\b/g;
-            const strings = /"[^"]*"/g;
-            const comments = language === 'python' ? /#[^\n]*/g : /\/\/[^\n]*|\/\*[\s\S]*?\*\//g;
-            return code
-                .replace(keywords, '<span class="keyword">$1</span>')
-                .replace(strings, '<span class="string">$1</span>')
-                .replace(comments, '<span class="comment">$1</span>');
-        }
-
-        function generatePythonCode(method, mode) {
-            let encode = mode === 'encode';
-            let funcName = encode ? 'encode' : 'decode';
-            let textVar = 'text';
-            const shift = 3;
-            const encryptionKey = 'key';
-
-            if (method === 'caesar') {
-                return `
-def caesar_cipher(text, shift=${shift}, encode=${encode}):
-    if not encode:
-        shift = -shift
-    result = ''
-    for char in text:
-        if char.isalpha():
-            base = ord('A') if char.isupper() else ord('a')
-            result += chr((ord(char) - base + shift) % 26 + base)
-        else:
-            result += char
-    return result
-
-# Sử dụng:
-${textVar} = "your_text_here"
-print(caesar_cipher(${textVar}))
-`;
-            } else if (method === 'vigenere') {
-                return `
-def vigenere_cipher(text, encryption_key="${encryptionKey}", encode=${encode}):
-    encryption_key = ''.join([c.lower() for c in encryption_key if c.isalpha()])
-    result = ''
-    key_index = 0
-    for char in text:
-        if char.isalpha():
-            shift = ord(encryption_key[key_index % len(encryption_key)]) - ord('a')
-            if not encode:
-                shift = -shift
-            base = ord('A') if char.isupper() else ord('a')
-            result += chr((ord(char) - base + shift) % 26 + base)
-            key_index += 1
-        else:
-            result += char
-    return result
-
-# Sử dụng:
-${textVar} = "your_text_here"
-print(vigenere_cipher(${textVar}))
-`;
-            } else if (method === 'aes') {
-                return `
-# Yêu cầu: pip install cryptography
-from cryptography.fernet import Fernet
-
-def aes_${funcName}(text):
-    key = b'pRmgMa8T0_szxNRiNLmvpxohamGfpx-N'
-    f = Fernet(key)
-    if ${encode}:
-        return f.encrypt(text.encode('utf-8')).decode('utf-8')
-    else:
-        return f.decrypt(text.encode('utf-8')).decode('utf-8')
-
-# Sử dụng:
-${textVar} = "your_text_here"
-print(aes_${funcName}(${textVar}))
-`;
-            }
-        }
-
-        function generateJavaCode(method, mode) {
-            let encode = mode === 'encode';
-            let funcName = encode ? 'Encode' : 'Decode';
-            let textVar = 'text';
-            const shift = 3;
-            const encryptionKey = 'key';
-
-            if (method === 'caesar') {
-                return `
-import java.nio.charset.StandardCharsets;
-
-public class CaesarCipher {
-    public static String caesarCipher(String text, int shift, boolean encode) {
-        if (!encode) shift = -shift;
-        StringBuilder result = new StringBuilder();
-        for (char chara : text.toCharArray()) {
-            if (Character.isLetter(chara)) {
-                char base = Character.isUpperCase(chara) ? 'A' : 'a';
-                result.append((char) (((chara - base + shift) % 26 + 26) % 26 + base));
-            } else {
-                result.append(chara);
-            }
-        }
-        return result.toString();
+      window.location.hash = paste.id; // chuyển ngay sang link riêng
+      openPasteById(paste.id);
+      loadPastes();
     }
 
-    public static void main(String[] args) {
-        String ${textVar} = "your_text_here";
-        int shift = ${shift};
-        System.out.println(caesarCipher(${textVar}, shift, ${encode}));
-    }
-}
-`;
-            } else if (method === 'vigenere') {
-                return `
-import java.nio.charset.StandardCharsets;
+    function loadPastes() {
+      const pasteList = document.getElementById("pasteList");
+      pasteList.innerHTML = "";
+      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
 
-public class VigenereCipher {
-    public static String vigenereCipher(String text, String encryptionKey, boolean encode) {
-        encryptionKey = encryptionKey.toLowerCase().replaceAll("[^a-z]", "");
-        StringBuilder result = new StringBuilder();
-        int keyIndex = 0;
-        for (char chara : text.toCharArray()) {
-            if (Character.isLetter(chara)) {
-                int shift = encryptionKey.charAt(keyIndex % encryptionKey.length()) - 'a';
-                if (!encode) shift = -shift;
-                char base = Character.isUpperCase(chara) ? 'A' : 'a';
-                result.append((char) (((chara - base + shift) % 26 + 26) % 26 + base));
-                keyIndex++;
-            } else {
-                result.append(chara);
-            }
-        }
-        return result.toString();
+      if (pastes.length === 0) {
+        pasteList.innerHTML = `<p class='text-gray-400'>Chưa có paste nào.</p>`;
+      }
+
+      pastes.forEach(paste => {
+        const div = document.createElement("div");
+        div.className = "bg-gray-800 p-4 rounded-xl shadow hover:bg-gray-700 cursor-pointer";
+        div.innerHTML = `
+          <h3 class="text-lg font-bold">${paste.title}</h3>
+          <p class="text-gray-400 text-sm truncate">${paste.content}</p>
+        `;
+        div.onclick = () => {
+          window.location.hash = paste.id;
+          openPasteById(paste.id);
+        };
+        pasteList.appendChild(div);
+      });
     }
 
-    public static void main(String[] args) {
-        String ${textVar} = "your_text_here";
-        String encryptionKey = "${encryptionKey}";
-        System.out.println(vigenereCipher(${textVar}, encryptionKey, ${encode}));
-    }
-}
-`;
-            } else if (method === 'aes') {
-                return `
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.spec.IvParameterSpec;
-import java.util.Base64;
-import java.nio.charset.StandardCharsets;
+    function openPasteById(id) {
+      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
+      let paste = pastes.find(p => p.id == id);
+      if (!paste) return;
+      currentPaste = paste;
 
-public class AES${funcName} {
-    public static String aes${funcName}(String text) throws Exception {
-        String keyStr = "1234567890123456";
-        byte[] key = keyStr.getBytes("UTF-8");
-        byte[] iv = key;
-        SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        if (${encode}) {
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-            byte[] encrypted = cipher.doFinal(text.getBytes("UTF-8"));
-            return Base64.getEncoder().encodeToString(encrypted);
-        } else {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-            byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(text));
-            return new String(decrypted, "UTF-8");
-        }
+      document.getElementById("modalTitle").textContent = paste.title;
+      document.getElementById("modalContent").textContent = paste.content;
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("shareLink").textContent = "";
     }
 
-    public static void main(String[] args) throws Exception {
-        String ${textVar} = "your_text_here";
-        System.out.println(aes${funcName}(${textVar}));
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+      currentPaste = null;
+      window.location.hash = "";
     }
-}
-`;
-            }
-        }
 
-        async function processText(mode) {
-            const input = document.getElementById('inputText').value;
-            const language = document.getElementById('language').value;
-            const outputDiv = document.getElementById('output');
-            const spinner = document.querySelector('.spinner');
+    function copyModal() {
+      if (!currentPaste) return;
+      navigator.clipboard.writeText(currentPaste.content);
+      alert("Đã copy nội dung!");
+    }
 
-            if (!input) {
-                outputDiv.innerHTML = `
-                    <div class="alert alert-danger" role="alert">
-                        <strong>Lỗi:</strong> Vui lòng nhập văn bản!
-                    </div>`;
-                return;
-            }
+    function downloadModal() {
+      if (!currentPaste) return;
+      const blob = new Blob([currentPaste.content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${currentPaste.title.replace(/\s+/g,'_')}.txt`;
+      a.click();
+    }
 
-            try {
-                spinner.style.display = 'block';
-                await new Promise(resolve => setTimeout(resolve, 300)); // Simulate processing
-                const method = determineMethod(input, mode);
-                const methodDisplay = {
-                    'caesar': 'Caesar Cipher (shift = 3)',
-                    'vigenere': 'Vigenère Cipher (key = "key")',
-                    'aes': 'AES Siêu Mạnh'
-                }[method];
+    function shareModal() {
+      if (!currentPaste) return;
+      const link = window.location.origin + window.location.pathname + "#" + currentPaste.id;
+      document.getElementById("shareLink").textContent = link;
+      navigator.clipboard.writeText(link);
+      alert("Link đã copy vào clipboard!");
+    }
 
-                let result = language === 'python' ? generatePythonCode(method, mode) : generateJavaCode(method, mode);
-                result = highlightCode(result.replace(/your_text_here/g, input), language);
+    function newPaste() {
+      document.getElementById("title").value = "";
+      document.getElementById("content").value = "";
+      window.location.hash = "";
+    }
 
-                outputDiv.innerHTML = `
-                    <div class="method-info">Phương pháp được sử dụng: ${methodDisplay}</div>
-                    <strong>Code ${language === 'python' ? 'Python' : 'Java'}:</strong>
-                    <pre><code>${result}</code></pre>
-                    <button class="btn btn-copy copy-btn" onclick="copyToClipboard(this)">Sao chép</button>
-                `;
-            } catch (e) {
-                outputDiv.innerHTML = `
-                    <div class="alert alert-danger" role="alert">
-                        <strong>Lỗi:</strong> Đã xảy ra lỗi trong quá trình xử lý: ${e.message}
-                    </div>`;
-            } finally {
-                spinner.style.display = 'none';
-            }
-        }
+    function clearAll() {
+      if (confirm("Bạn có chắc muốn xóa tất cả paste?")) {
+        localStorage.removeItem("pastes");
+        loadPastes();
+      }
+    }
 
-        function copyToClipboard(button) {
-            const codeElement = button.previousElementSibling;
-            const code = codeElement.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                button.textContent = 'Đã sao chép!';
-                button.classList.add('btn-success');
-                setTimeout(() => {
-                    button.textContent = 'Sao chép';
-                    button.classList.remove('btn-success');
-                }, 2000);
-            }).catch(err => {
-                console.error('Lỗi khi sao chép:', err);
-                button.textContent = 'Lỗi sao chép!';
-                button.classList.add('btn-danger');
-                setTimeout(() => {
-                    button.textContent = 'Sao chép';
-                    button.classList.remove('btn-danger');
-                }, 2000);
-            });
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    function goHome() {
+      closeModal();
+      window.location.hash = "";
+    }
+
+    // Khi mở trang, nếu có #id thì mở paste tương ứng
+    window.addEventListener("load", () => {
+      loadPastes();
+      const id = window.location.hash.slice(1);
+      if (id) openPasteById(id);
+    });
+  </script>
 </body>
 </html>
