@@ -6,11 +6,11 @@
   <title>Pastefy Clone</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
-    pre code { display: block; white-space: pre; overflow-x: auto; padding: 1rem; border-radius: 0.5rem; }
+    pre { max-height: 70vh; overflow: auto; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex flex-col items-center p-6">
@@ -52,16 +52,9 @@
         <button onclick="copyModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Copy</button>
         <button onclick="downloadModal()" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg">Download</button>
         <button onclick="shareModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg">Share Link</button>
-        <button onclick="rawModal()" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg">Raw</button>
       </div>
       <p id="shareLink" class="mt-3 text-sm text-blue-400 break-words"></p>
     </div>
-  </div>
-
-  <!-- Raw hiển thị riêng -->
-  <div id="rawView" class="hidden w-full max-w-5xl">
-    <h2 class="text-xl font-bold mb-3">Raw Paste</h2>
-    <pre><code id="rawContent" class="language-javascript"></code></pre>
   </div>
 
   <script>
@@ -115,7 +108,7 @@
       document.getElementById("modalTitle").textContent = paste.title;
       const modalContent = document.getElementById("modalContent");
       modalContent.textContent = paste.content;
-      hljs.highlightElement(modalContent);
+      Prism.highlightElement(modalContent);
 
       document.getElementById("modal").classList.remove("hidden");
       document.getElementById("shareLink").textContent = "";
@@ -145,30 +138,11 @@
 
     function shareModal() {
       if (!currentPaste) return;
-      const link = window.location.origin + window.location.pathname + "#" + currentPaste.id;
-      document.getElementById("shareLink").textContent = link;
-      navigator.clipboard.writeText(link);
-      alert("Link đã copy vào clipboard!");
-    }
-
-    function rawModal() {
-      if (!currentPaste) return;
-      window.location.hash = "raw-" + currentPaste.id;
-      openRawById(currentPaste.id);
-    }
-
-    function openRawById(id) {
-      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
-      let paste = pastes.find(p => p.id == id);
-      if (!paste) return;
-
-      document.getElementById("editor").classList.add("hidden");
-      document.getElementById("modal").classList.add("hidden");
-      document.getElementById("rawView").classList.remove("hidden");
-
-      const rawContent = document.getElementById("rawContent");
-      rawContent.textContent = paste.content;
-      hljs.highlightElement(rawContent);
+      const base = window.location.origin + window.location.pathname;
+      const rawLink = `${base}?raw=${currentPaste.id}`;
+      document.getElementById("shareLink").textContent = rawLink;
+      navigator.clipboard.writeText(rawLink);
+      alert("Raw link đã copy vào clipboard!");
     }
 
     function newPaste() {
@@ -186,18 +160,26 @@
 
     function goHome() {
       closeModal();
-      document.getElementById("editor").classList.remove("hidden");
-      document.getElementById("rawView").classList.add("hidden");
       window.location.hash = "";
     }
 
+    // Xử lý khi mở trang với raw link
     window.addEventListener("load", () => {
       loadPastes();
-      const hash = window.location.hash.slice(1);
-      if (hash.startsWith("raw-")) {
-        openRawById(hash.replace("raw-", ""));
-      } else if (hash) {
-        openPasteById(hash);
+      const urlParams = new URLSearchParams(window.location.search);
+      const rawId = urlParams.get("raw");
+      if (rawId) {
+        let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
+        let paste = pastes.find(p => p.id == rawId);
+        if (paste) {
+          document.body.innerHTML = `<pre class='language-javascript'><code>${
+            paste.content.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))
+          }</code></pre>`;
+          Prism.highlightAll();
+        }
+      } else {
+        const id = window.location.hash.slice(1);
+        if (id) openPasteById(id);
       }
     });
   </script>
