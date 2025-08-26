@@ -1,166 +1,221 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pastefy Clone</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f9;
+    }
+    h1 { text-align: center; }
+    .paste-form, .paste-list {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover { background: #0056b3; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+    li:hover { background: #f0f0f0; }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 600px;
+      max-width: 95%;
+    }
+    pre {
+      background: #111;
+      color: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+
+    /* Raw Modal */
+    .raw-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: monospace;
+      z-index: 2000;
+    }
+    .raw-close {
+      position: absolute;
+      top: 10px; right: 20px;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+<body>
+  <h1>Pastefy Clone</h1>
 
-  <!-- Header -->
-  <header class="w-full max-w-5xl flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-blue-400 cursor-pointer" onclick="goHome()">PasteClone</h1>
-    <nav class="space-x-4">
-      <button onclick="newPaste()" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700">New</button>
-      <button onclick="clearAll()" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700">Clear All</button>
-    </nav>
-  </header>
+  <div class="paste-form">
+    <input id="title" placeholder="Paste Title" />
+    <textarea id="content" rows="6" placeholder="Paste Content..."></textarea>
+    <button onclick="savePaste()">Save Paste</button>
+  </div>
 
-  <!-- Form nhập -->
-  <main id="editor" class="w-full max-w-5xl grid md:grid-cols-2 gap-6">
-    <div class="bg-gray-800 p-5 rounded-2xl shadow-xl flex flex-col">
-      <input id="title" type="text" placeholder="Tiêu đề paste..." 
-        class="w-full mb-3 p-3 rounded-lg bg-gray-700 text-white outline-none">
-      <textarea id="content" rows="14" placeholder="Nhập text/code tại đây..."
-        class="flex-1 w-full p-3 rounded-lg bg-gray-700 text-white outline-none font-mono text-sm"></textarea>
-      <button onclick="savePaste()" 
-        class="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 rounded-xl font-semibold">Lưu Paste</button>
-    </div>
+  <div class="paste-list">
+    <h2>Saved Pastes</h2>
+    <ul id="pasteList"></ul>
+  </div>
 
-    <!-- Danh sách paste -->
-    <div>
-      <h2 class="text-2xl font-semibold mb-4">Danh sách Paste</h2>
-      <div id="pasteList" class="space-y-4"></div>
-    </div>
-  </main>
-
-  <!-- Modal hiển thị paste -->
-  <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-    <div class="bg-gray-900 w-11/12 md:w-2/3 lg:w-1/2 p-6 rounded-2xl shadow-2xl relative">
-      <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white">✕</button>
-      <h3 id="modalTitle" class="text-xl font-bold mb-3"></h3>
-      <pre id="modalContent" class="bg-gray-800 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono text-sm"></pre>
-      <div class="mt-4 flex space-x-3">
-        <button onclick="copyModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Copy</button>
-        <button onclick="downloadModal()" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg">Download</button>
-        <button onclick="shareModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg">Share Link</button>
-      </div>
-      <p id="shareLink" class="mt-3 text-sm text-blue-400 break-words"></p>
+  <!-- Modal -->
+  <div class="modal" id="pasteModal">
+    <div class="modal-content">
+      <h2 id="modalTitle"></h2>
+      <pre id="modalContent"></pre>
+      <button id="copyBtn">Copy</button>
+      <button id="downloadBtn">Download</button>
+      <button id="shareBtn">Share Link</button>
+      <button id="rawBtn">View Raw</button>
+      <button onclick="closeModal()">Close</button>
     </div>
   </div>
 
+  <!-- Raw Fullscreen Modal -->
+  <div class="raw-modal" id="rawModal">
+    <button class="raw-close" onclick="closeRaw()">Close</button>
+    <div id="rawContent"></div>
+  </div>
+
   <script>
-    let currentPaste = null;
-
-    function savePaste() {
-      const title = document.getElementById("title").value || "Untitled";
-      const content = document.getElementById("content").value.trim();
-      if (!content) return alert("Nội dung trống!");
-
-      const paste = { id: Date.now(), title, content };
-      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
-      pastes.unshift(paste);
-      localStorage.setItem("pastes", JSON.stringify(pastes));
-
-      window.location.hash = paste.id; // chuyển ngay sang link riêng
-      openPasteById(paste.id);
-      loadPastes();
-    }
+    let currentPasteId = null;
 
     function loadPastes() {
-      const pasteList = document.getElementById("pasteList");
-      pasteList.innerHTML = "";
-      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
-
-      if (pastes.length === 0) {
-        pasteList.innerHTML = `<p class='text-gray-400'>Chưa có paste nào.</p>`;
-      }
-
-      pastes.forEach(paste => {
-        const div = document.createElement("div");
-        div.className = "bg-gray-800 p-4 rounded-xl shadow hover:bg-gray-700 cursor-pointer";
-        div.innerHTML = `
-          <h3 class="text-lg font-bold">${paste.title}</h3>
-          <p class="text-gray-400 text-sm truncate">${paste.content}</p>
-        `;
-        div.onclick = () => {
-          window.location.hash = paste.id;
-          openPasteById(paste.id);
-        };
-        pasteList.appendChild(div);
+      const pastes = JSON.parse(localStorage.getItem("pastes")) || [];
+      const list = document.getElementById("pasteList");
+      list.innerHTML = "";
+      pastes.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.title;
+        li.onclick = () => openModal(p.id);
+        list.appendChild(li);
       });
     }
 
-    function openPasteById(id) {
-      let pastes = JSON.parse(localStorage.getItem("pastes") || "[]");
-      let paste = pastes.find(p => p.id == id);
-      if (!paste) return;
-      currentPaste = paste;
+    function savePaste() {
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("content").value;
+      if (!title || !content) return alert("Please enter title and content");
 
+      const pastes = JSON.parse(localStorage.getItem("pastes")) || [];
+      const paste = { id: Date.now().toString(), title, content };
+      pastes.push(paste);
+      localStorage.setItem("pastes", JSON.stringify(pastes));
+      document.getElementById("title").value = "";
+      document.getElementById("content").value = "";
+      loadPastes();
+    }
+
+    function openModal(id) {
+      const pastes = JSON.parse(localStorage.getItem("pastes")) || [];
+      const paste = pastes.find(p => p.id === id);
+      if (!paste) return;
+      currentPasteId = id;
       document.getElementById("modalTitle").textContent = paste.title;
       document.getElementById("modalContent").textContent = paste.content;
-      document.getElementById("modal").classList.remove("hidden");
-      document.getElementById("shareLink").textContent = "";
+      document.getElementById("pasteModal").style.display = "flex";
     }
 
     function closeModal() {
-      document.getElementById("modal").classList.add("hidden");
-      currentPaste = null;
-      window.location.hash = "";
+      document.getElementById("pasteModal").style.display = "none";
     }
 
-    function copyModal() {
-      if (!currentPaste) return;
-      navigator.clipboard.writeText(currentPaste.content);
-      alert("Đã copy nội dung!");
-    }
+    // Copy
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      const text = document.getElementById("modalContent").textContent;
+      navigator.clipboard.writeText(text);
+      alert("Copied to clipboard!");
+    });
 
-    function downloadModal() {
-      if (!currentPaste) return;
-      const blob = new Blob([currentPaste.content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
+    // Download
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const paste = getCurrentPaste();
+      if (!paste) return;
+      const blob = new Blob([paste.content], { type: "text/plain" });
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `${currentPaste.title.replace(/\s+/g,'_')}.txt`;
+      a.href = URL.createObjectURL(blob);
+      a.download = paste.title + ".txt";
       a.click();
-    }
+    });
 
-    function shareModal() {
-      if (!currentPaste) return;
-      const link = window.location.origin + window.location.pathname + "#" + currentPaste.id;
-      document.getElementById("shareLink").textContent = link;
-      navigator.clipboard.writeText(link);
-      alert("Link đã copy vào clipboard!");
-    }
-
-    function newPaste() {
-      document.getElementById("title").value = "";
-      document.getElementById("content").value = "";
-      window.location.hash = "";
-    }
-
-    function clearAll() {
-      if (confirm("Bạn có chắc muốn xóa tất cả paste?")) {
-        localStorage.removeItem("pastes");
-        loadPastes();
+    // Share
+    document.getElementById("shareBtn").addEventListener("click", () => {
+      if (currentPasteId) {
+        const url = location.origin + location.pathname + "#" + currentPasteId;
+        navigator.clipboard.writeText(url);
+        alert("Share link copied!\n" + url);
       }
+    });
+
+    // View Raw inside same page
+    document.getElementById("rawBtn").addEventListener("click", () => {
+      const paste = getCurrentPaste();
+      if (paste) {
+        document.getElementById("rawContent").textContent = paste.content;
+        document.getElementById("rawModal").style.display = "block";
+      }
+    });
+
+    function closeRaw() {
+      document.getElementById("rawModal").style.display = "none";
     }
 
-    function goHome() {
-      closeModal();
-      window.location.hash = "";
+    function getCurrentPaste() {
+      const pastes = JSON.parse(localStorage.getItem("pastes")) || [];
+      return pastes.find(p => p.id === currentPasteId);
     }
 
-    // Khi mở trang, nếu có #id thì mở paste tương ứng
+    // Auto-open paste if hash exists
     window.addEventListener("load", () => {
       loadPastes();
-      const id = window.location.hash.slice(1);
-      if (id) openPasteById(id);
+      const hash = location.hash.slice(1);
+      if (hash) openModal(hash);
     });
   </script>
 </body>
