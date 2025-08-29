@@ -1,1 +1,74 @@
-page 404
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>web down</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+        }
+
+        .text {
+            position: absolute;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            pointer-events: none;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc, 0 0 15px #00ffcc;
+            }
+            to {
+                text-shadow: 0 0 10px #ff00ff, 0 0 15px #ff00ff, 0 0 20px #ff00ff;
+            }
+        }
+
+        @keyframes move {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty));
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const numTexts = 200;
+        const body = document.body;
+        const maxWidth = window.innerWidth;
+        const maxHeight = window.innerHeight;
+
+        function createText() {
+            const text = document.createElement('div');
+            text.className = 'text';
+            text.textContent = 'web đã bị lỗi';
+            text.style.left = `${Math.random() * maxWidth}px`;
+            text.style.top = `${Math.random() * maxHeight}px`;
+            text.style.setProperty('--tx', `${(Math.random() - 0.5) * maxWidth}px`);
+            text.style.setProperty('--ty', `${(Math.random() - 0.5) * maxHeight}px`);
+            text.style.animation = `move ${Math.random() * 5 + 5}s linear infinite, glow 1.5s ease-in-out infinite alternate`;
+            body.appendChild(text);
+            text.addEventListener('animationiteration', () => {
+                text.style.left = `${Math.random() * maxWidth}px`;
+                text.style.top = `${Math.random() * maxHeight}px`;
+                text.style.setProperty('--tx', `${(Math.random() - 0.5) * maxWidth}px`);
+                text.style.setProperty('--ty', `${(Math.random() - 0.5) * maxHeight}px`);
+            });
+        }
+        for (let i = 0; i < numTexts; i++) {
+            createText();
+        }
+
+        setInterval(createText,);
+    </script>
+</body>
+</html>
